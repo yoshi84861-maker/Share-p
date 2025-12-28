@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股價追蹤助手 (2330 / 0050)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #f4f7f6; color: #333; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2c3e50; }
+        .input-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px; padding: 15px; background: #eef2f3; border-radius: 8px; }
+        input, select, button { padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background-color: #27ae60; color: white; cursor: pointer; border: none; font-weight: bold; }
+        button:hover { background-color: #219150; }
+        .chart-container { position: relative; height: 40vh; width: 100%; margin-top: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+        th { background-color: #34495e; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📈 股價紀錄追蹤 (2330 / 0050)</h2>
+
+    <div class="input-section">
+        <input type="date" id="date" value="2025-12-29">
+        <select id="stockSymbol">
+            <option value="2330">2330 台積電</option>
+            <option value="0050">0050 元大台灣50</option>
+        </select>
+        <input type="number" id="closePrice" placeholder="收盤價" step="0.1">
+        <input type="number" id="highPrice" placeholder="最高價" step="0.1">
+        <button onclick="addData()">新增紀錄</button>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="stockChart"></canvas>
+    </div>
+
+    <h3>歷史紀錄</h3>
+    <table id="recordTable">
+        <thead>
+            <tr>
+                <th>日期</th>
+                <th>代號</th>
+                <th>收盤價</th>
+                <th>最高價</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+</div>
+
+<script>
+    // 預設資料 (12/22 - 12/26)
+    let stockData = [
+        { date: '2025-12-22', symbol: '2330', close: 1030, high: 1040 },
+        { date: '2025-12-23', symbol: '2330', close: 1035, high: 1045 },
+        { date: '2025-12-24', symbol: '2330', close: 1025, high: 1040 },
+        { date: '2025-12-25', symbol: '2330', close: 1040, high: 1050 },
+        { date: '2025-12-26', symbol: '2330', close: 1045, high: 1055 },
+        { date: '2025-12-22', symbol: '0050', close: 195.2, high: 196.5 },
+        { date: '2025-12-23', symbol: '0050', close: 196.0, high: 197.2 },
+        { date: '2025-12-24', symbol: '0050', close: 194.8, high: 196.0 },
+        { date: '2025-12-25', symbol: '0050', close: 197.5, high: 198.8 },
+        { date: '2025-12-26', symbol: '0050', close: 198.2, high: 199.5 }
+    ];
+
+    let chart;
+
+    function initChart() {
+        const ctx = document.getElementById('stockChart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    { label: '收盤價', borderColor: '#3498db', data: [], fill: false, tension: 0.1 },
+                    { label: '最高價', borderColor: '#e74c3c', data: [], fill: false, tension: 0.1 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: false } }
+            }
+        });
+        updateDisplay();
+    }
+
+    function addData() {
+        const date = document.getElementById('date').value;
+        const symbol = document.getElementById('stockSymbol').value;
+        const close = parseFloat(document.getElementById('closePrice').value);
+        const high = parseFloat(document.getElementById('highPrice').value);
+
+        if (!date || isNaN(close) || isNaN(high)) {
+            alert("請填寫完整資訊");
+            return;
+        }
+
+        stockData.push({ date, symbol, close, high });
+        stockData.sort((a, b) => new Date(a.date) - new Date(b.date));
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        const symbol = document.getElementById('stockSymbol').value;
+        const filteredData = stockData.filter(d => d.symbol === symbol);
+
+        // 更新表格
+        const tbody = document.querySelector('#recordTable tbody');
+        tbody.innerHTML = '';
+        filteredData.forEach(item => {
+            const row = `<tr><td>${item.date}</td><td>${item.symbol}</td><td>${item.close}</td><td>${item.high}</td></tr>`;
+            tbody.innerHTML += row;
+        });
+
+        // 更新圖表
+        chart.data.labels = filteredData.map(d => d.date);
+        chart.data.datasets[0].data = filteredData.map(d => d.close);
+        chart.data.datasets[0].label = `${symbol} 收盤價`;
+        chart.data.datasets[1].data = filteredData.map(d => d.high);
+        chart.data.datasets[1].label = `${symbol} 最高價`;
+        chart.update();
+    }
+
+    // 當切換代號時自動更新圖表
+    document.getElementById('stockSymbol').addEventListener('change', updateDisplay);
+
+    window.onload = initChart;
+</script>
+
+</body>
+</html>
