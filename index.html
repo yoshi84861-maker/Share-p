@@ -91,4 +91,65 @@
     function saveNewRecord() {
         const date = document.getElementById('dateInput').value;
         const symbol = document.getElementById('stockInput').value;
-        const close = parseFloat(document.getElementById('close
+        const close = parseFloat(document.getElementById('closeInput').value);
+        const high = parseFloat(document.getElementById('highInput').value);
+
+        if(!date || isNaN(close)) return alert("請輸入完整數據");
+
+        myRecords.push({ date, symbol, close, high });
+        localStorage.setItem('stock_records', JSON.stringify(myRecords));
+        refreshUI();
+    }
+
+    function deleteRecord(index) {
+        myRecords.splice(index, 1);
+        localStorage.setItem('stock_records', JSON.stringify(myRecords));
+        refreshUI();
+    }
+
+    function clearAll() {
+        if(confirm("確定要刪除所有紀錄並恢復預設嗎？")) {
+            localStorage.removeItem('stock_records');
+            myRecords = [...initialData];
+            refreshUI();
+        }
+    }
+
+    function refreshUI() {
+        myRecords.sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        const dates = [...new Set(myRecords.map(d => d.date))];
+        const labels = dates.map(d => d.split('-').slice(1).join('/')); // 轉成 MM/DD
+
+        const getSeries = (sym, type) => dates.map(d => {
+            const r = myRecords.find(i => i.date === d && i.symbol === sym);
+            return r ? r[type] : null;
+        });
+
+        chart.data.labels = labels;
+        chart.data.datasets = [
+            { label: '2330 收盤', data: getSeries('2330', 'close'), borderColor: '#0056b3', yAxisID: 'y', tension: 0.1 },
+            { label: '2330 最高', data: getSeries('2330', 'high'), borderColor: '#adcfff', borderDash: [5,5], yAxisID: 'y', tension: 0.1 },
+            { label: '0050 收盤', data: getSeries('0050', 'close'), borderColor: '#d9480f', yAxisID: 'y1', tension: 0.1 },
+            { label: '0050 最高', data: getSeries('0050', 'high'), borderColor: '#ffc9c9', borderDash: [5,5], yAxisID: 'y1', tension: 0.1 }
+        ];
+        chart.update();
+
+        const tbody = document.querySelector('#dataTable tbody');
+        tbody.innerHTML = myRecords.slice().reverse().map((r, idx) => `
+            <tr>
+                <td>${r.date}</td>
+                <td>${r.symbol}</td>
+                <td>${r.close}</td>
+                <td>${r.high}</td>
+                <td><button onclick="deleteRecord(${myRecords.length - 1 - idx})" style="padding:2px 5px; background:gray;">刪除</button></td>
+            </tr>
+        `).join('');
+    }
+
+    document.getElementById('dateInput').valueAsDate = new Date();
+    window.onload = initChart;
+</script>
+
+</body>
+</html>
