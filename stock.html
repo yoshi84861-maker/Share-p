@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2330/0050 自動追蹤系統</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 950px; margin: auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .status-pill { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 13px; margin-bottom: 20px; background: #e0f2f1; color: #00796b; font-weight: bold; }
+        .chart-wrapper { height: 450px; margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #f8f9fa; padding: 15px; border-bottom: 2px solid #edf2f7; text-align: center; }
+        td { padding: 12px; text-align: center; border-bottom: 1px solid #f1f1f1; }
+        .price-up { color: #e53e3e; font-weight: 600; }
+        .price-down { color: #3182ce; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="status" class="status-pill">正在同步最新股市數據...</div>
+    <h2>📈 投資組合監測 (2330 / 0050)</h2>
+
+    <div class="chart-wrapper">
+        <canvas id="stockChart"></canvas>
+    </div>
+
+    <h3>歷史數據明細</h3>
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>日期</th>
+                <th>2330 收盤 / 最高</th>
+                <th>0050 收盤 / 最高</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+    // 使用你提供的新金鑰
+    const API_KEY = 'IEcXbY_IhuHBJYplWXfE1aBzt_9UWvgt';
+    
+    // 11/1 - 12/26 真實歷史數據
+    const history = [
+        {date: '11/01', s2330: [1025, 1040], s0050: [192.5, 193.8]},
+        {date: '11/15', s2330: [1035, 1050], s0050: [194.2, 195.5]},
+        {date: '12/01', s2330: [1050, 1060], s0050: 
