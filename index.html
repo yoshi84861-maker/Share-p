@@ -51,21 +51,34 @@
     let db = JSON.parse(localStorage.getItem('tw_stock_final_db')) || exactHistory;
     let chart;
 
-    async function fetchLiveStock() {
-        const today = new Date();
-        const dateTag = `${(today.getMonth()+1).toString().padStart(2,'0')}/${today.getDate().toString().padStart(2,'0')}`;
-        
-        // 週末不抓取
-        if (today.getDay() === 0 || today.getDay() === 6) {
-            updateStatus("今日為非交易日，顯示存檔紀錄。");
-            render(); return;
-        }
+  async function fetchLiveStock() {
+    const today = new Date();
+    const dateTag = `${(today.getMonth()+1)}/${today.getDate()}`;
+    
+    // 週末不更新
+    if (today.getDay() === 0 || today.getDay() === 6) return render();
 
-        // 避免重複抓取今日
-        if (db.some(r => r.date === dateTag)) {
-            updateStatus(`今日 (${dateTag}) 數據已是最新。`);
-            render(); return;
+    // 你的 GAS 部署網址
+    const gasUrl = "你剛才複製的_GAS_網址_貼在這裡";
+
+    try {
+        const res = await fetch(gasUrl);
+        const data = await res.json();
+
+        // data 的格式會是 {"2330": ["1050.0", "1065.0"], "0050": ["199.5", "201.2"]}
+        if (data["2330"] && !db.some(r => r.date === dateTag)) {
+            db.push({
+                date: dateTag,
+                s2330: data["2330"],
+                s0050: data["0050"]
+            });
+            localStorage.setItem('tw_stock_final_db', JSON.stringify(db));
         }
+    } catch (e) {
+        console.log("GAS 連線失敗:", e);
+    }
+    render();
+}
 
         try {
             // 使用 Yahoo Finance 接口 (2330.TW / 0050.TW)
